@@ -5,7 +5,7 @@ import ipywidgets as ipy
 import networkx as nx
 from matplotlib.animation import FuncAnimation
 
-n = 7
+n = 32
 G = nx.grid_2d_graph(n, n)
 
 nx.set_node_attributes(G, False, 'active')       # whether electrical signal has been passed through it
@@ -16,8 +16,14 @@ nx.set_node_attributes(G, 3, 'refractory_timer') # associated refractory timer i
 
 pos = nx.kamada_kawai_layout(G)
 
+fig, ax = plt.subplots(figsize=(8,8))
+node_collection = nx.draw_networkx_nodes(G, pos, ax=ax, node_size=50, node_color='blue')
+nx.draw_networkx_edges(G, pos, ax=ax, alpha=0.08)
+ax.set_axis_off()
 
-def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbouring_excitation=0.5, activation_timer=5, refractory_stopclock=3, ax=None):
+flattened_state = np.zeros(n*n, dtype=int) # making a global variable for the flattened state rather than trying to unpack it from the main function
+
+def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbouring_excitation=0.5, activation_timer=5, refractory_stopclock=4):
     """
     1. Check all activate cells without any changes and see if the timer has exceeded the limit and with the refractory period
     (refractory cells are effectively removed from this graph for this period e.g. available_neurons = [neuron['refractory'=False] for neuron in G])
@@ -25,9 +31,6 @@ def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbo
     3. Apply the neighbouring cell thing
     4. Update characteristics
     """
-    if ax is None:
-        ax = plt.gca()
-        
     nodes = graph_object.nodes()
 
     for node in nodes:
@@ -58,10 +61,11 @@ def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbo
 
     for node_array in activation_mask:
         node_key = tuple(node_array) # only tuples are hashable
-        nodes[node_key]['active'] = True
-        nodes[node_key]['colour'] = 'red'
-        nodes[node_key]['refractory'] = False
-        nodes[node_key]['timer'] = 0
+        if not nodes[node_key]['refractory']:
+            nodes[node_key]['active'] = True
+            nodes[node_key]['colour'] = 'red'
+            nodes[node_key]['refractory'] = False
+            nodes[node_key]['timer'] = 0
 
     '''
     For neighbouring activation, find all active cells and make a list of all of their neighbours (which aren't active themselves)
@@ -104,10 +108,17 @@ def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbo
         nodes[neighbour]['timer'] = 0
 
     colours = [nodes[node]['colour'] for node in graph_object.nodes()]
-    nx.draw(graph_object, pos=pos, ax=ax, node_color=colours, node_size=25)
+    node_collection.set_color(colours)
     
-# fig setup
-fig = plt.figure(figsize=(15,9))
-anim = FuncAnimation(fig, neuron_abstraction_I, fargs=(G, pos), cache_frame_data=False, interval=500, blit=False) # blitting only draws the dynamic aspects of the plot
+    '''
+    Below is the logic for the raspberry pi and to control the array of LEDs. There will be a conversion of the state of whether a given node is active into a matrix of the same given shape of the code (7x7 for the final display).
+    This will then be flattened into an array outputting either 1 or 0 depending on if the node (and by extension the LED) is on or not. 
+    '''
+
+    global flattened_state
+    flattened_state = np.array([1 if nodes[node]['active'] else 0 for node in graph_object.nodes()]).flatten()
+    
+    
+anim = FuncAnimation(fig, neuron_abstraction_I, fargs=(G, ), cache_frame_data=False, interval=100, blit=False) # blitting only draws the dynamic aspects of the plot
 
 plt.show()
