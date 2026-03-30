@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import ipywidgets as ipy
 import networkx as nx
 from matplotlib.animation import FuncAnimation
+# from machine import Pin
 
-n = 32
+n = 5
 G = nx.grid_2d_graph(n, n)
 
 nx.set_node_attributes(G, False, 'active')       # whether electrical signal has been passed through it
@@ -110,15 +111,22 @@ def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbo
     colours = [nodes[node]['colour'] for node in graph_object.nodes()]
     node_collection.set_color(colours)
     
-    '''
-    Below is the logic for the raspberry pi and to control the array of LEDs. There will be a conversion of the state of whether a given node is active into a matrix of the same given shape of the code (7x7 for the final display).
-    This will then be flattened into an array outputting either 1 or 0 depending on if the node (and by extension the LED) is on or not. 
-    '''
 
+    # raspberry pi logic
     global flattened_state
     flattened_state = np.array([1 if nodes[node]['active'] else 0 for node in graph_object.nodes()]).flatten()
+    print(flattened_state)
     
+    """
+    Using the neoplex thing for LED arrays (and making sure all the wiring is correct for the pinout and it won't draw too much current in the flickering efect, do a conditional loop.
     
-anim = FuncAnimation(fig, neuron_abstraction_I, fargs=(G, ), cache_frame_data=False, interval=100, blit=False) # blitting only draws the dynamic aspects of the plot
-
+    if index == 1:
+        led[index].on()
+    else:
+        led[index].off()
+        
+    It's going to be some really simple code (esp. in comparison to the other one)
+    """  
+    
+anim = FuncAnimation(fig, neuron_abstraction_I, fargs=(G, ), cache_frame_data=False, interval=500, blit=False) # blitting only draws the dynamic aspects of the plot
 plt.show()
