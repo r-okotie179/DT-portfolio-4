@@ -1,11 +1,30 @@
+from neopixel import Neopixel
+import utime
+import random
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import ipywidgets as ipy
 import networkx as nx
-from matplotlib.animation import FuncAnimation
-# from machine import Pin
 
+# SETUP
+'''
+Defining the parameters for both the graph display (omitting the visualisation modules) and the raspberry pi
+'''
+
+## raspberry pi setup
+
+numpix = 49
+state_machine = 0 
+pin_num = 28
+
+strip = Neopixel(numpix, state_machine, PIN_NUM, "RGB")
+
+white = (255, 255, 255)
+blank = (0,0,0)
+
+delay = 0.5 # seconds
+strip.brightness(500) # what is this scale?
+
+## graph setup
 n = 5
 G = nx.grid_2d_graph(n, n)
 
@@ -15,16 +34,12 @@ nx.set_node_attributes(G, 0, 'timer')            # localised time attribute
 nx.set_node_attributes(G, False, 'refractory')   # activating the refractory period for cells after having activated the timer
 nx.set_node_attributes(G, 3, 'refractory_timer') # associated refractory timer in which nothing can happen to it
 
-pos = nx.kamada_kawai_layout(G)
 
-fig, ax = plt.subplots(figsize=(8,8))
-node_collection = nx.draw_networkx_nodes(G, pos, ax=ax, node_size=50, node_color='blue')
-nx.draw_networkx_edges(G, pos, ax=ax, alpha=0.08)
-ax.set_axis_off()
-
-flattened_state = np.zeros(n*n, dtype=int) # making a global variable for the flattened state rather than trying to unpack it from the main function
-
-def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbouring_excitation=0.5, activation_timer=5, refractory_stopclock=4):
+# SEIZURE MODEL DEFININTION
+'''
+Defining the main seizure model, which will be called iteratively later
+'''
+def neuron_abstraction_I(graph_object, background_excitation=0.1, neighbouring_excitation=0.5, activation_timer=5, refractory_stopclock=4):
     """
     1. Check all activate cells without any changes and see if the timer has exceeded the limit and with the refractory period
     (refractory cells are effectively removed from this graph for this period e.g. available_neurons = [neuron['refractory'=False] for neuron in G])
@@ -65,7 +80,6 @@ def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbo
         if not nodes[node_key]['refractory']:
             nodes[node_key]['active'] = True
             nodes[node_key]['colour'] = 'red'
-            nodes[node_key]['refractory'] = False
             nodes[node_key]['timer'] = 0
 
     '''
@@ -111,22 +125,29 @@ def neuron_abstraction_I(frame, graph_object, background_excitation=0.1, neighbo
     colours = [nodes[node]['colour'] for node in graph_object.nodes()]
     node_collection.set_color(colours)
     
-
-    # raspberry pi logic
-    global flattened_state
+    # raspberry pi logic -- just returns what is necessary for the raspberry pi logic
     flattened_state = np.array([1 if nodes[node]['active'] else 0 for node in graph_object.nodes()]).flatten()
-    print(flattened_state)
+    return flattened_state
+
+# PROGRAM LOOP
+'''
+The actual main code for this.
+'''
+
+while True:
+    # call function 
+    output_state = neuron_abstraction_I(G)
     
-    """
-    Using the neoplex thing for LED arrays (and making sure all the wiring is correct for the pinout and it won't draw too much current in the flickering efect, do a conditional loop.
-    
-    if index == 1:
-        led[index].on()
-    else:
-        led[index].off()
+    # assigning each of the colours to each other pixels
+    # there should be a way to do this simultaneously but not too fussed
+    for i in range(n):
+        if output_state[i] == 1:
+            colour = white # set brightness outside of loop
+        if output[i] == 0:
+            colour = blank # just set the colour to be nothing so (0,0,0)
+        strip.set_pixel(i, colour)
         
-    It's going to be some really simple code (esp. in comparison to the other one)
-    """  
-    
-anim = FuncAnimation(fig, neuron_abstraction_I, fargs=(G, ), cache_frame_data=False, interval=500, blit=False) # blitting only draws the dynamic aspects of the plot
-plt.show()
+    strip.show()
+    utime.sleep(delay) # set a delay that is roughly the same (slightly longer than) the animate function
+ 
+
