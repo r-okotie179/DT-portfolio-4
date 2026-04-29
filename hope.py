@@ -16,7 +16,7 @@ white = (255, 255, 255)
 blank = (0, 0, 0)
 
 delay = 0.5
-strip.brightness(500)
+strip.brightness(50)
 
 n = 7
 
