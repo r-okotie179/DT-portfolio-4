@@ -3,7 +3,7 @@ import utime
 import random
 
 # SETUP
-numpix = 49
+numpix = 7
 state_machine = 0
 pin_num = 28
 
@@ -15,9 +15,9 @@ blank = (0, 0, 0)
 delay = 0.5
 strip.brightness(500)
 
-n = 5
+n = 2
 
-# Graph setup - replaces networkx
+# graph setup that replaces networkx by being a clearer dictionary format
 nodes = {
     (i, j): {
         'active': False,
@@ -57,7 +57,7 @@ def neuron_abstraction_I(nodes, background_excitation=0.1, neighbouring_excitati
                 nodes[node]['refractory'] = True
                 nodes[node]['timer'] = 0
 
-    # Background excitation - Bernoulli per node
+    # background excitation 
     for node in nodes:
         if not nodes[node]['refractory'] and not nodes[node]['active']:
             if random.random() <= background_excitation:
@@ -65,7 +65,7 @@ def neuron_abstraction_I(nodes, background_excitation=0.1, neighbouring_excitati
                 nodes[node]['colour'] = 'red'
                 nodes[node]['timer'] = 0
 
-    # Neighbouring excitation
+    # neighbouring excitation
     all_active = [node for node in nodes if nodes[node]['active']]
     neighbours_to_activate = set()
 
@@ -89,7 +89,7 @@ def neuron_abstraction_I(nodes, background_excitation=0.1, neighbouring_excitati
 while True:
     output_state = neuron_abstraction_I(nodes)
 
-    for i in range(numpix):
+    for i in range(len(output_state)):
         if output_state[i] == 1:
             colour = white
         else:
