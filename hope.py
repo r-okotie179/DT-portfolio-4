@@ -1,6 +1,11 @@
 # NOTE TO SELF: when testing with the full display, I must use the powerbank (or some external supply) to supply the current.
 # https://youtu.be/WpaXMcmwyeU?si=Wo2o8s0Q6WbjgjaV
 
+"""
+
+The data line seems to be the issue since this is not working and I need to have a clearer understanding as to why
+"""
+
 from neopixel import Neopixel
 import utime
 import random
@@ -15,7 +20,7 @@ strip = Neopixel(numpix, state_machine, pin_num, "RGB")
 white = (255, 255, 255)
 blank = (0, 0, 0)
 
-delay = 0.5
+delay = 3
 strip.brightness(50)
 
 n = 7
@@ -24,7 +29,6 @@ n = 7
 nodes = {
     (i, j): {
         'active': False,
-        'colour': 'blue',
         'timer': 0,
         'refractory': False,
         'refractory_timer': 3
@@ -56,7 +60,6 @@ def neuron_abstraction_I(nodes, background_excitation=0.1, neighbouring_excitati
             nodes[node]['timer'] += 1
             if nodes[node]['timer'] >= activation_timer:
                 nodes[node]['active'] = False
-                nodes[node]['colour'] = 'blue'
                 nodes[node]['refractory'] = True
                 nodes[node]['timer'] = 0
 
@@ -65,7 +68,6 @@ def neuron_abstraction_I(nodes, background_excitation=0.1, neighbouring_excitati
         if not nodes[node]['refractory'] and not nodes[node]['active']:
             if random.random() <= background_excitation:
                 nodes[node]['active'] = True
-                nodes[node]['colour'] = 'red'
                 nodes[node]['timer'] = 0
 
     # neighbouring excitation
@@ -80,7 +82,6 @@ def neuron_abstraction_I(nodes, background_excitation=0.1, neighbouring_excitati
 
     for neighbour in neighbours_to_activate:
         nodes[neighbour]['active'] = True
-        nodes[neighbour]['colour'] = 'red'
         nodes[neighbour]['refractory'] = False
         nodes[neighbour]['timer'] = 0
 
@@ -89,6 +90,7 @@ def neuron_abstraction_I(nodes, background_excitation=0.1, neighbouring_excitati
 
 
 # PROGRAM LOOP
+print("start, debugging test")
 while True:
     output_state = neuron_abstraction_I(nodes)
 
@@ -100,4 +102,5 @@ while True:
         strip.set_pixel(i, colour)
 
     strip.show()
+    print("instance")
     utime.sleep(delay)
