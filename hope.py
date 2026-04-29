@@ -3,7 +3,11 @@
 
 """
 
-The data line seems to be the issue since this is not working and I need to have a clearer understanding as to why
+- The data line seems to be the issue since this is not working and I need to have a clearer understanding as to why
+    - I can test that LEDs are working by connecting power to the 5V pin and ground to the signal pin but this doesn't solve the mass of my issues since the pattern does not work on the snaked design and I am confused
+- When a strip of 7 LEDs were working, although a pattern was present (I do not understand why there are multiple colours shown in this), they did not update with the delay time set in the code -- is it due to the complexity? 
+    - If it is due to the complexity, why was this able to run at a latency of 500ms previously 
+- What can issues be that means that the code does not show up and explain in some detail the chnages in the graph setup (this was initially written in networkx): does lines 33 - 50 have an issue and is the program loop (lines 97-110) the issue that needs to be tackled
 """
 
 from neopixel import Neopixel
