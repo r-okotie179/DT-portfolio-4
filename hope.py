@@ -18,7 +18,7 @@ blank = (0, 0, 0)
 delay = 0.5
 strip.brightness(500)
 
-n = 2
+n = 7
 
 # graph setup that replaces networkx by being a clearer dictionary format
 nodes = {
