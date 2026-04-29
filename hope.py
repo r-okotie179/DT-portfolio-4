@@ -1,11 +1,14 @@
+# NOTE TO SELF: when testing with the full display, I must use the powerbank (or some external supply) to supply the current.
+# https://youtu.be/WpaXMcmwyeU?si=Wo2o8s0Q6WbjgjaV
+
 from neopixel import Neopixel
 import utime
 import random
 
 # SETUP
-numpix = 7
+numpix = 49
 state_machine = 0
-pin_num = 28
+pin_num = 28 # this is distinct to the GPIO pin, but adjust the pin number to ensure that this is the case
 
 strip = Neopixel(numpix, state_machine, pin_num, "RGB")
 
