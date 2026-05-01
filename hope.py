@@ -1,5 +1,5 @@
 # need to understand clearer the logic-shift converter and how to properly connect up the wires, the outgoing power line is confusing to me and I do not know if this code words with simple tests which needs to be tested with. 
-
+# https://www.youtube.com/watch?v=4oA4KKxxBXE&t=110s
 """
 Components used: 
 - raspberry pi pico 2w
