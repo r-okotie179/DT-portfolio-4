@@ -8,6 +8,9 @@ LEDs (find the strip on kitronik)
 
 The only issue would be how they are connected together
 
+Instantaneously, all the pieces can light up together and there is a pattern with the code and how it is all running (but with an extrememly low latency). The power source is 5V DC and the step up logic shifter seems to be working fine. 
+The only issue I see is whether the end pieces are not soldered together properly but I do not know how that would make any sense since I have seen them light up. Therefore, I do not know where the issue would be bt I will try to resolder before concluding on this viewpoint. 
+
 """
 
 from neopixel import Neopixel
@@ -24,7 +27,7 @@ strip = Neopixel(numpix, state_machine, pin_num, "RGB")
 white = (255, 255, 255)
 blank = (0, 0, 0)
 
-delay = 3
+delay = 5
 strip.brightness(50)
 
 n = 7
@@ -95,9 +98,13 @@ def neuron_abstraction_I(nodes, background_excitation=0.1, neighbouring_excitati
 
 # PROGRAM LOOP
 print("start, debugging test")
+instances = 0
 while True:
+    instances += 1
     output_state = neuron_abstraction_I(nodes)
-
+    for i in range(7):
+        list_range = output_state[(i * 7): ((i+1)*7)]
+        print(list_range)
     for i in range(len(output_state)):
         if output_state[i] == 1:
             colour = white
@@ -106,5 +113,5 @@ while True:
         strip.set_pixel(i, colour)
 
     strip.show()
-    print("instance")
+    print(f"instance: {instances}")
     utime.sleep(delay)
